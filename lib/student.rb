@@ -10,11 +10,10 @@ class Student
     student
   end
 
-
   def self.all
     # retrieve all the rows from the "Students" database
     # remember each row should be a new instance of the Student class
-      sql = <<-SQL
+    sql = <<-SQL
       SELECT *
       FROM students
     SQL
@@ -38,16 +37,16 @@ class Student
       self.new_from_db(row)
     end.first
   end
-  
+
   def save
     sql = <<-SQL
-      INSERT INTO students (name, grade) 
+      INSERT INTO students (name, grade)
       VALUES (?, ?)
     SQL
 
     DB[:conn].execute(sql, self.name, self.grade)
   end
-  
+
   def self.create_table
     sql = <<-SQL
     CREATE TABLE IF NOT EXISTS students (
@@ -62,9 +61,22 @@ class Student
 
   def self.drop_table
     sql = "DROP TABLE IF EXISTS students"
+
     DB[:conn].execute(sql)
   end
-  
+
+  def self.students_below_12th_grade
+    sql = <<-SQL
+      SELECT *
+      FROM students
+      WHERE grade < 12
+    SQL
+
+    DB[:conn].execute(sql).map do |row|
+      self.new_from_db(row)
+    end
+  end
+
   def self.all_students_in_grade_9
     sql = <<-SQL
       SELECT COUNT(*)
@@ -76,20 +88,22 @@ class Student
       self.new_from_db(row)
     end
   end
-  
-    def self.students_below_12th_grade
+
+  def self.first_X_students_in_grade_10(number)
     sql = <<-SQL
       SELECT *
       FROM students
-      WHERE grade < 12
+      WHERE grade = 10
+      ORDER BY students.id
+      LIMIT ?
     SQL
 
-    DB[:conn].execute(sql).map do |row|
+    DB[:conn].execute(sql, number).map do |row|
       self.new_from_db(row)
     end
   end
-  
-def self.first_student_in_grade_10
+
+  def self.first_student_in_grade_10
     sql = <<-SQL
       SELECT *
       FROM students
@@ -101,7 +115,7 @@ def self.first_student_in_grade_10
       self.new_from_db(row)
     end.first
   end
-  
+
   def self.all_students_in_grade_X(grade)
     sql = <<-SQL
       SELECT *
